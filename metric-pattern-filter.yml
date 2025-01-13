@@ -1,0 +1,26 @@
+{ $.userIdentity.type = "Root" && $.userIdentity.invokedBy NOT EXISTS && $.eventType != "AwsServiceEvent" }
+
+# { $.userIdentity.type = "Root" }
+
+## This looks at the userIdentity.type field in the CloudTrail log
+## It only matches when this field equals exactly "Root"
+## This identifies actions performed by the root user of an AWS account
+
+# && $.userIdentity.invokedBy NOT EXISTS
+
+## The && means this is an additional condition that must be true
+## It checks if the userIdentity.invokedBy field does not exist in the log
+## This helps filter out automated or service-initiated actions that might use root credentials
+## If invokedBy exists, it typically means an AWS service performed the action, not a human user
+
+# && $.eventType != "AwsServiceEvent"
+
+## This is another condition that must be true
+## It ensures the eventType field is not equal to "AwsServiceEvent"
+## AWS service events are automated system actions rather than direct user actions
+## This further helps ensure we're only catching human-initiated root actions
+
+# So together, this pattern will only match CloudTrail logs where:
+## The action was performed by a root user AND
+## It wasn't automated by a service (no invokedBy field) AND
+## It wasn't an AWS system event
